@@ -53,13 +53,20 @@ class CountingIterator(object):
         else:
             self.total = total
 
+        self.early_stop = self.total
+
     def __len__(self):
         return self.total
 
     def __iter__(self):
         for x in self.iterable:
             if self.n >= self.total:
-                return
+                raise RuntimeError(
+                    'Mismatch between actual and expected iterable length. '
+                    'Please report this to the fairseq developers.'
+                )
+            elif self.n >= self.early_stop:
+                return  # early stop based on take()
             self.n += 1
             yield x
 
@@ -79,7 +86,7 @@ class CountingIterator(object):
         """
         Truncates the iterator to n elements at most.
         """
-        self.total = min(self.total, n)
+        self.early_stop = min(self.early_stop, n)
 
         # Propagate this change to the underlying iterator
         if hasattr(self.iterable, "take"):
@@ -300,13 +307,18 @@ class EpochBatchIterator(EpochBatchIterating):
             'epoch': self.epoch,
             'iterations_in_epoch': self.iterations_in_epoch,
             'shuffle': self.shuffle,
+            'end_of_epoch': self.end_of_epoch(),
         }
 
     def load_state_dict(self, state_dict):
         """Copies the state of the iterator from the given *state_dict*."""
         self.epoch = state_dict['epoch']
         itr_pos = state_dict.get('iterations_in_epoch', 0)
-        if itr_pos > 0:
+        is_legacy_state_dict = ('end_of_epoch' not in state_dict)
+        end_of_epoch = state_dict.get('end_of_epoch', False)
+        if end_of_epoch:
+            self.epoch += 1
+        elif itr_pos > 0:
             # fast-forward epoch iterator
             self._next_epoch_itr = self._get_iterator_for_epoch(
                 self.epoch,
@@ -314,8 +326,15 @@ class EpochBatchIterator(EpochBatchIterating):
                 offset=itr_pos,
             )
             if self._next_epoch_itr is None:
-                # we finished the epoch, increment epoch counter
-                self.epoch += 1
+                if is_legacy_state_dict:
+                    # we finished the epoch, increment epoch counter
+                    self.epoch += 1
+                else:
+                    raise RuntimeError(
+                        'Cannot resume training due to dataloader mismatch, please '
+                        'report this to the fairseq developers. You can relaunch '
+                        'training with `--reset-dataloader` and it should work.'
+                    )
         else:
             self._next_epoch_itr = None
 
