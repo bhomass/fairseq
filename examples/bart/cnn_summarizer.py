@@ -13,7 +13,7 @@ class CNN_Summarizer():
         self.bart.eval()
         self.bart.half()
         
-    def summary(self, source):
+    def summarize(self, source):
         slines = [source]
         with torch.no_grad():
             hypotheses_batch = self.bart.sample(slines, beam=4, lenpen=2.0, max_len_b=140, min_len=55, no_repeat_ngram_size=3)
