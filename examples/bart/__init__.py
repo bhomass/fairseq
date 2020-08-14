@@ -1,0 +1,1 @@
+from .cnn_summarizer import CNN_Summarizer
