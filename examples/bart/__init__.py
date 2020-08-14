@@ -1,1 +1,0 @@
-from examples.bart.cnn_summarizer import CNN_Summarizer
