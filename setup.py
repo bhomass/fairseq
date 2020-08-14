@@ -144,7 +144,7 @@ setup(
         'tqdm',
     ],
     dependency_links=dependency_links,
-    packages=find_packages(exclude=['scripts', 'tests']),
+    packages=packages=[pkg for pkg in find_packages(exclude=['scripts', 'tests'])],
     ext_modules=extensions,
     test_suite='tests',
     entry_points={
