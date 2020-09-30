@@ -142,6 +142,7 @@ setup(
         'sacrebleu',
         'torch==1.4.0',
         'tqdm',
+	'ipywidgets==7.5.0'
     ],
     dependency_links=dependency_links,
     packages=find_packages(exclude=['scripts', 'tests']),
