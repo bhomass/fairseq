@@ -6,7 +6,7 @@ class CNN_Summarizer():
     
     def __init__(self, path):
         self.bart = BARTModel.from_pretrained(
-            '/content/drive/My Drive/' + path,
+            path,
             checkpoint_file='model.pt'
         )
         self.bart.cuda()
