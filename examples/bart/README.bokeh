@@ -1,4 +1,11 @@
 
+cd fairseq/examples/bart
 
 bokeh serve --allow-websocket-origin=* summarizer-app.py
 
+Then in the browser, enter the url: http://host:5006/summarizer-app
+
+The model files need to be stored in these directories
+
+/data/fairseq/models/bart.large.cnn
+/data/fairseq/models/bart.large.xsum
